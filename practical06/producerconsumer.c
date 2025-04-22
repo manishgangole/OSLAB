@@ -1,50 +1,93 @@
-// file5.c
 #include <stdio.h>
 #include <stdlib.h>
-#include <semaphore.h>
 #include <pthread.h>
 
-sem_t mutex, full, empty;
-int buffer[5];
-int in = 0, out = 0;
+#define MAX 10  // Size of the buffer
 
-void *producer(void *p) {
-    int item = rand() % 100;
-    sem_wait(&empty);
-    sem_wait(&mutex);
+// Shared variables
+int buffer = 0;  // Buffer to store produced items
+int mutex = 1;   // Mutex to ensure mutual exclusion
+int full = 0;    // Number of full slots in the buffer
+int empty = MAX; // Number of empty slots in the buffer
 
-    buffer[in] = item;
-    printf("Produced: %d\n", item);
-    in = (in + 1) % 5;
+// Mutex variable
+pthread_mutex_t lock;
 
-    sem_post(&mutex);
-    sem_post(&full);
+// Producer function
+void producer() {
+    // Decrement mutex to enter critical section
+    pthread_mutex_lock(&lock);
+
+    // Check if there is space to produce
+    if (empty > 0) {
+        // Produce an item
+        buffer++;
+        full++;
+        empty--;
+        printf("\nProducer produces item %d", buffer);
+    } else {
+        printf("\nBuffer is full!");
+    }
+
+    // Increment mutex to leave critical section
+    pthread_mutex_unlock(&lock);
 }
 
-void *consumer(void *c) {
-    sem_wait(&full);
-    sem_wait(&mutex);
+// Consumer function
+void consumer() {
+    // Decrement mutex to enter critical section
+    pthread_mutex_lock(&lock);
 
-    int item = buffer[out];
-    printf("Consumed: %d\n", item);
-    out = (out + 1) % 5;
+    // Check if there are items to consume
+    if (full > 0) {
+        // Consume an item
+        printf("\nConsumer consumes item %d", buffer);
+        buffer--;
+        full--;
+        empty++;
+    } else {
+        printf("\nBuffer is empty!");
+    }
 
-    sem_post(&mutex);
-    sem_post(&empty);
+    // Increment mutex to leave critical section
+    pthread_mutex_unlock(&lock);
 }
 
 int main() {
-    pthread_t prod, cons;
+    int choice;
 
-    sem_init(&mutex, 0, 1);
-    sem_init(&full, 0, 0);
-    sem_init(&empty, 0, 5);
+    // Initialize the mutex
+    pthread_mutex_init(&lock, NULL);
 
-    pthread_create(&prod, NULL, producer, NULL);
-    pthread_create(&cons, NULL, consumer, NULL);
+    printf("\n1. Press 1 for Producer");
+    printf("\n2. Press 2 for Consumer");
+    printf("\n3. Press 3 for Exit");
 
-    pthread_join(prod, NULL);
-    pthread_join(cons, NULL);
+    while (1) {
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                // Producer operation
+                producer();
+                break;
+
+            case 2:
+                // Consumer operation
+                consumer();
+                break;
+
+            case 3:
+                // Exit program
+                printf("\nExiting program...");
+                pthread_mutex_destroy(&lock);
+                exit(0);
+
+            default:
+                printf("\nInvalid choice! Please try again.");
+        }
+    }
 
     return 0;
 }
