@@ -1,0 +1,16 @@
+Enter number of processes: 5
+Enter number of resources: 3
+Enter the available resources: 3 3 2
+Enter allocated resources matrix (allocation matrix):
+Enter allocated resources for process P0: 0 1 0
+Enter allocated resources for process P1: 2 0 0
+Enter allocated resources for process P2: 3 0 2
+Enter allocated resources for process P3: 2 1 1
+Enter allocated resources for process P4: 0 0 2
+Enter maximum resources matrix (max matrix):
+Enter maximum resources for process P0: 7 5 3
+Enter maximum resources for process P1: 3 2 2
+Enter maximum resources for process P2: 9 0 2
+Enter maximum resources for process P3: 2 2 2
+Enter maximum resources for process P4: 4 3 3
+System is in a safe state. Safe Sequence: P1 P3 P4 P0 P2
